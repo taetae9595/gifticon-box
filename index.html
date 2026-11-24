@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>내 기프티콘함</title>
+<meta name="description" content="폰에만 저장되는 내 기프티콘 보관함. 사진을 올리면 유효기간을 읽어서 임박한 순서로 정리해 드려요." />
+<meta name="theme-color" content="#ffffff" />
+<meta name="color-scheme" content="light" />
+
+<!-- PWA / 홈 화면 추가 -->
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="내 기프티콘함" />
+
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header class="appbar">
+  <div class="appbar-inner">
+    <div class="appbar-title">
+      <h1>내 기프티콘함</h1>
+      <p class="appbar-sub" id="appbar-sub">불러오는 중…</p>
+    </div>
+    <button type="button" class="icon-btn" id="btn-menu" aria-label="보관함 메뉴 열기" aria-haspopup="dialog">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="main">
+  <section class="empty" id="empty" hidden>
+    <div class="empty-art" aria-hidden="true">
+      <svg viewBox="0 0 120 120">
+        <rect x="22" y="44" width="76" height="58" rx="12" fill="#fff" stroke="#e3e5ea" stroke-width="2"/>
+        <rect x="22" y="44" width="76" height="16" rx="8" fill="#fdf3c8"/>
+        <rect x="54" y="44" width="12" height="58" fill="#fee500"/>
+        <path d="M60 44c-10 0-18-6-18-13 0-5 4-8 9-8 6 0 9 6 9 21zm0 0c10 0 18-6 18-13 0-5-4-8-9-8-6 0-9 6-9 21z" fill="#fff" stroke="#e3e5ea" stroke-width="2"/>
+      </svg>
+    </div>
+    <h2>아직 담긴 기프티콘이 없어요</h2>
+    <p>기프티콘 사진을 올리면<br />유효기간을 읽어서 임박한 순서로 정리해 드려요.</p>
+    <button type="button" class="btn-primary" id="empty-add">첫 기프티콘 담기</button>
+  </section>
+
+  <section class="grid" id="list" aria-label="기프티콘 목록"></section>
+</main>
+
+<button type="button" class="fab" id="btn-add">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-width="2.4" stroke-linecap="round"/></svg>
+  기프티콘 추가
+</button>
+
+<!-- 추가 시트 -->
+<div class="sheet" id="sheet-add" hidden role="dialog" aria-modal="true" aria-labelledby="add-title">
+  <div class="sheet-panel">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-head">
+      <h2 id="add-title">기프티콘 추가</h2>
+      <button type="button" class="sheet-close" id="add-close" aria-label="닫기">닫기</button>
+    </div>
+    <div class="sheet-body" id="add-body">
+      <label class="dropzone" id="dropzone">
+        <input type="file" id="file-input" accept="image/*" multiple hidden />
+        <span class="dz-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 16.5V19a1 1 0 001 1h14a1 1 0 001-1v-2.5M12 4v11m0-11L7.5 8.5M12 4l4.5 4.5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="dz-title">기프티콘 사진 올리기</span>
+        <span class="dz-sub">여러 장을 한 번에 골라도 돼요 · 유효기간을 자동으로 읽어요</span>
+      </label>
+
+      <p class="ocr-note" id="ocr-note" hidden></p>
+      <div class="pending" id="pending"></div>
+    </div>
+    <div class="sheet-foot">
+      <button type="button" class="btn-primary" id="btn-save" disabled>보관함에 담기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 메뉴 시트(백업·복원) -->
+<div class="sheet" id="sheet-menu" hidden role="dialog" aria-modal="true" aria-labelledby="menu-title">
+  <div class="sheet-panel">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-head">
+      <h2 id="menu-title">보관함 메뉴</h2>
+      <button type="button" class="sheet-close" id="menu-close" aria-label="닫기">닫기</button>
+    </div>
+    <div class="sheet-body">
+      <p class="menu-stat" id="menu-stat"></p>
+      <button type="button" class="menu-row" id="btn-export">
+        <span class="menu-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 15V4m0 11l-4-4m4 4l4-4M4 17v2a1 1 0 001 1h14a1 1 0 001-1v-2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="menu-text"><strong>백업 파일로 내보내기</strong><em>사진과 유효기간을 JSON 한 파일로 저장해요</em></span>
+      </button>
+      <button type="button" class="menu-row" id="btn-import">
+        <span class="menu-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 4v11m0-11l-4 4m4-4l4 4M4 17v2a1 1 0 001 1h14a1 1 0 001-1v-2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="menu-text"><strong>백업 파일 가져오기</strong><em>내보낸 파일을 다시 불러와요 (기존 목록에 더해져요)</em></span>
+      </button>
+      <input type="file" id="import-input" accept="application/json,.json" hidden />
+      <div class="menu-info">
+        <p><strong>이 기기 저장 방식</strong></p>
+        <p>사진과 정보는 이 브라우저(IndexedDB)에만 저장돼요. 서버로 보내지 않고 로그인도 없어요. 브라우저 기록·사이트 데이터를 지우면 함께 지워지니, 폰을 바꾸기 전에는 백업 파일로 내보내 두세요.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 확대 보기 모달 -->
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-name">
+  <div class="modal-bar">
+    <button type="button" class="modal-btn" id="modal-close" aria-label="닫기">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </button>
+    <span class="modal-badge" id="modal-badge"></span>
+    <button type="button" class="modal-btn" id="modal-edit" aria-label="정보 수정">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10-10-4-4L4 16v4z" stroke-width="1.8" stroke-linejoin="round"/><path d="M13.5 5.5l4 4" stroke-width="1.8"/></svg>
+    </button>
+  </div>
+
+  <div class="modal-stage" id="modal-stage">
+    <img id="modal-img" alt="기프티콘 사진" />
+  </div>
+
+  <div class="modal-bottom">
+    <div class="modal-info" id="modal-info">
+      <h2 id="modal-name">기프티콘</h2>
+      <p id="modal-date"></p>
+    </div>
+
+    <div class="modal-edit" id="modal-edit-panel" hidden>
+      <label class="field">
+        <span>상품명·메모</span>
+        <input type="text" id="edit-name" placeholder="예: 스타벅스 아메리카노 (선택)" maxlength="60" />
+      </label>
+      <label class="field">
+        <span>유효기간</span>
+        <input type="date" id="edit-date" />
+      </label>
+      <div class="edit-actions">
+        <button type="button" class="btn-ghost" id="edit-cancel">취소</button>
+        <button type="button" class="btn-primary btn-sm" id="edit-save">저장</button>
+      </div>
+    </div>
+
+    <button type="button" class="btn-use" id="btn-use">사용완료 (삭제)</button>
+  </div>
+</div>
+
+<!-- 되돌리기 토스트 -->
+<div class="toast" id="toast" hidden role="status">
+  <span id="toast-text"></span>
+  <button type="button" id="toast-undo">되돌리기</button>
+</div>
+
+<script src="ocr-date.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js" defer></script>
+<script src="app.js" defer></script>
+</body>
+</html>

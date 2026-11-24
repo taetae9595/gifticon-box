@@ -1,0 +1,20 @@
+{
+  "name": "내 기프티콘함",
+  "short_name": "기프티콘함",
+  "description": "폰에만 저장되는 기프티콘 보관함. 사진을 올리면 유효기간을 읽어 임박한 순서로 정리해 드려요.",
+  "lang": "ko",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#f2f3f5",
+  "theme_color": "#ffffff",
+  "categories": ["lifestyle", "utilities", "productivity"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
