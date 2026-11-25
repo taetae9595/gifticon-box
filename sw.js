@@ -1,12 +1,12 @@
 /* 내 기프티콘함 — 오프라인에서도 열리도록 앱 껍데기를 캐시한다.
    사진·정보는 IndexedDB에 있고, 여기서는 화면 파일만 다룬다. */
-const CACHE = 'gifticon-box-v1';
+const CACHE = 'gifticon-box-v2';
 const SHELL = [
   './',
   './index.html',
-  './styles.css',
-  './app.js',
-  './ocr-date.js',
+  './styles.css?v=2',
+  './app.js?v=2',
+  './ocr-date.js?v=2',
   './manifest.json',
   './icon.svg',
   './icon-192.png',
@@ -52,8 +52,9 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== location.origin) return;
 
   // 화면 파일은 항상 새 것을 먼저 시도하고, 오프라인이면 캐시로
+  // (cache: 'no-cache' — 브라우저 HTTP 캐시에 남은 옛 파일을 쓰지 않고 매번 서버에 확인)
   event.respondWith(
-    fetch(req)
+    fetch(req, { cache: 'no-cache' })
       .then((res) => {
         if (res && res.ok) {
           const copy = res.clone();
