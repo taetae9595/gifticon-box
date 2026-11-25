@@ -271,12 +271,14 @@ function openModal(id) {
   const dateLine = $('modal-date');
   dateLine.textContent = '';
   const span = document.createElement('span');
+  span.className = 'modal-date-main';
   span.textContent = dotted(item.expiry) + '까지';
-  if (n !== null && n < 0) span.className = 'strong-expired';
-  else if (n !== null && n <= 7) span.className = 'strong-soon';
+  if (n !== null && n < 0) span.classList.add('strong-expired');
+  else if (n !== null && n <= 7) span.classList.add('strong-soon');
   dateLine.appendChild(span);
   if (n !== null) {
     const tail = document.createElement('span');
+    tail.className = 'modal-date-tail';
     tail.textContent = n < 0 ? '  ·  ' + (-n) + '일 지났어요' : n === 0 ? '  ·  오늘이 마지막이에요' : '  ·  ' + n + '일 남았어요';
     dateLine.appendChild(tail);
   }
